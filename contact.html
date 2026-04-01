@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IBM Global Furniture | Contact</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header class="header">
+    <nav class="navbar container">
+      <a href="index.html" class="brand">
+        <img src="logo.png" alt="IBM Global Furniture Logo" class="logo" />
+        <div class="brand-text">
+          <h2>IBM GLOBAL FURNITURE</h2>
+          <p>Luxury • Comfort • Craftsmanship</p>
+        </div>
+      </a>
+
+      <div class="menu-toggle" id="menuToggle">&#9776;</div>
+
+      <ul class="nav-links" id="navLinks">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="products.html">Products</a></li>
+        <li><a href="gallery.html">Gallery</a></li>
+        <li><a href="contact.html" class="active">Contact</a></li>
+        <li><a href="contact.html" class="nav-btn">Get Quote</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section class="page-banner">
+    <div class="container">
+      <h1>Contact Us</h1>
+      <p>Talk to us about your furniture project, order or custom request.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container contact-grid">
+      <div class="contact-card">
+        <h2>Get In Touch</h2>
+        <p><strong>Company:</strong> IBM Global Furniture</p>
+        <p><strong>Phone:</strong> +234 XXX XXX XXXX</p>
+        <p><strong>Email:</strong> info@ibmglobalfurniture.com</p>
+        <p><strong>Address:</strong> Company address will be added here</p>
+        <p><strong>Working Hours:</strong> Monday - Saturday | 8:00 AM - 6:00 PM</p>
+
+        <div class="contact-actions">
+          <a href="https://wa.me/2340000000000" target="_blank" class="btn primary-btn">Chat on WhatsApp</a>
+          <a href="mailto:info@ibmglobalfurniture.com" class="btn secondary-dark-btn">Send Email</a>
+        </div>
+      </div>
+
+      <div class="contact-form-box">
+        <h2>Send an Inquiry</h2>
+        <form>
+          <input type="text" placeholder="Your Full Name" required>
+          <input type="email" placeholder="Your Email Address" required>
+          <input type="text" placeholder="Your Phone Number" required>
+          <input type="text" placeholder="Type of Furniture Needed">
+          <textarea rows="6" placeholder="Tell us about your request"></textarea>
+          <button type="submit" class="btn primary-btn full-btn">Send Inquiry</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt-bg">
+    <div class="container">
+      <div class="section-title">
+        <h2>Why Contact Us</h2>
+        <p>We help clients find the right furniture solution for their needs.</p>
+      </div>
+
+      <div class="feature-grid">
+        <div class="feature-card">
+          <h3>Custom Requests</h3>
+          <p>Tell us what you want and we will help create the best furniture option for you.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Fast Response</h3>
+          <p>We respond professionally and guide you through the next steps clearly.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Project Support</h3>
+          <p>From single furniture pieces to bulk orders, we can help plan your project.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container footer-grid">
+      <div>
+        <img src="logo.png" alt="IBM Global Furniture Logo" class="footer-logo">
+        <h3>IBM GLOBAL FURNITURE</h3>
+        <p>Premium furniture solutions for homes, offices and commercial spaces.</p>
+      </div>
+
+      <div>
+        <h4>Quick Links</h4>
+        <a href="index.html">Home</a>
+        <a href="about.html">About</a>
+        <a href="products.html">Products</a>
+        <a href="gallery.html">Gallery</a>
+        <a href="contact.html">Contact</a>
+      </div>
+
+      <div>
+        <h4>Contact</h4>
+        <p>Phone: +234 XXX XXX XXXX</p>
+        <p>Email: info@ibmglobalfurniture.com</p>
+        <p>Address: Company address will be added here</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 IBM Global Furniture. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <a href="https://wa.me/2340000000000" target="_blank" class="whatsapp-float">💬</a>
+
+  <script>
+    const menuToggle = document.getElementById("menuToggle");
+    const navLinks = document.getElementById("navLinks");
+
+    menuToggle.addEventListener("click", () => {
+      navLinks.classList.toggle("show");
+    });
+  </script>
+</body>
+</html>
