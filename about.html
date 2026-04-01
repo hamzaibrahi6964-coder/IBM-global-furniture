@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IBM Global Furniture | About</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header class="header">
+    <nav class="navbar container">
+      <a href="index.html" class="brand">
+        <img src="logo.png" alt="IBM Global Furniture Logo" class="logo" />
+        <div class="brand-text">
+          <h2>IBM GLOBAL FURNITURE</h2>
+          <p>Luxury • Comfort • Craftsmanship</p>
+        </div>
+      </a>
+
+      <div class="menu-toggle" id="menuToggle">&#9776;</div>
+
+      <ul class="nav-links" id="navLinks">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html" class="active">About</a></li>
+        <li><a href="products.html">Products</a></li>
+        <li><a href="gallery.html">Gallery</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li><a href="contact.html" class="nav-btn">Get Quote</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section class="page-banner">
+    <div class="container">
+      <h1>About IBM Global Furniture</h1>
+      <p>Building elegant spaces with premium furniture and trusted service.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container two-col">
+      <div class="text-box">
+        <h2>Who We Are</h2>
+        <p>
+          IBM Global Furniture is a premium furniture brand committed to
+          delivering quality, style and comfort through beautifully crafted
+          furniture solutions.
+        </p>
+        <p>
+          We serve homeowners, offices, hotels, apartments, showrooms and
+          commercial businesses with products that combine function with elegance.
+        </p>
+        <p>
+          Our mission is to provide furniture that improves the way people live,
+          work and experience their spaces.
+        </p>
+      </div>
+      <div class="image-box">
+        <img src="https://images.unsplash.com/photo-1449247709967-d4461a6a6103?auto=format&fit=crop&w=1200&q=80" alt="Furniture interior">
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt-bg">
+    <div class="container">
+      <div class="section-title">
+        <h2>What We Stand For</h2>
+        <p>Our values shape every design, order and client experience.</p>
+      </div>
+
+      <div class="feature-grid">
+        <div class="feature-card">
+          <h3>Quality</h3>
+          <p>We prioritize strong materials, clean finishing and furniture that lasts.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Elegance</h3>
+          <p>Our designs are made to elevate homes, offices and luxury spaces.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Professionalism</h3>
+          <p>We provide dependable service, clear communication and timely delivery.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-title">
+        <h2>Our Services</h2>
+        <p>Complete furniture support for individual and corporate clients.</p>
+      </div>
+
+      <div class="card-grid">
+        <div class="simple-card">
+          <h3>Custom Furniture Production</h3>
+          <p>Furniture designed around your preferred dimensions, materials and style.</p>
+        </div>
+        <div class="simple-card">
+          <h3>Home & Office Furnishing</h3>
+          <p>Solutions tailored for apartments, homes, offices and executive spaces.</p>
+        </div>
+        <div class="simple-card">
+          <h3>Bulk Supply</h3>
+          <p>Large furniture supply for schools, hotels, estates and commercial projects.</p>
+        </div>
+        <div class="simple-card">
+          <h3>Interior Support</h3>
+          <p>Guidance on choosing pieces that fit your space and overall design direction.</p>
+        </div>
+        <div class="simple-card">
+          <h3>Delivery</h3>
+          <p>Reliable delivery designed to keep every order safe and in excellent condition.</p>
+        </div>
+        <div class="simple-card">
+          <h3>Installation</h3>
+          <p>Professional installation services for selected products and big projects.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-section">
+    <div class="container cta-box">
+      <div>
+        <h2>Let’s Furnish Your Space</h2>
+        <p>Talk to us about your next home, office or commercial project.</p>
+      </div>
+      <a href="contact.html" class="btn primary-btn">Get Started</a>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container footer-grid">
+      <div>
+        <img src="logo.png" alt="IBM Global Furniture Logo" class="footer-logo">
+        <h3>IBM GLOBAL FURNITURE</h3>
+        <p>Premium furniture solutions for homes, offices and commercial spaces.</p>
+      </div>
+
+      <div>
+        <h4>Quick Links</h4>
+        <a href="index.html">Home</a>
+        <a href="about.html">About</a>
+        <a href="products.html">Products</a>
+        <a href="gallery.html">Gallery</a>
+        <a href="contact.html">Contact</a>
+      </div>
+
+      <div>
+        <h4>Contact</h4>
+        <p>Phone: +234 XXX XXX XXXX</p>
+        <p>Email: info@ibmglobalfurniture.com</p>
+        <p>Address: Company address will be added here</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 IBM Global Furniture. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <a href="https://wa.me/2340000000000" target="_blank" class="whatsapp-float">💬</a>
+
+  <script>
+    const menuToggle = document.getElementById("menuToggle");
+    const navLinks = document.getElementById("navLinks");
+
+    menuToggle.addEventListener("click", () => {
+      navLinks.classList.toggle("show");
+    });
+  </script>
+</body>
+</html>
