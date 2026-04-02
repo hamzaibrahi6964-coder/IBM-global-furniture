@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IBM Global Furniture | Admin Login</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="admin-body">
+
+  <section class="admin-auth-section">
+    <div class="admin-auth-box">
+      <div class="admin-auth-logo">
+        <img src="logo.png" alt="IBM Global Furniture Logo">
+        <h1>IBM GLOBAL FURNITURE</h1>
+        <p>Admin Portal</p>
+      </div>
+
+      <form id="loginForm" class="admin-form">
+        <h2>Admin Login</h2>
+        <p class="admin-form-text">Login to manage products, images and website content.</p>
+
+        <input type="email" id="email" placeholder="Admin Email" required />
+        <input type="password" id="password" placeholder="Password" required />
+
+        <button type="submit" class="btn primary-btn full-btn">Login</button>
+        <p id="loginMessage" class="form-message"></p>
+      </form>
+    </div>
+  </section>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const loginForm = document.getElementById("loginForm");
+    const loginMessage = document.getElementById("loginMessage");
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        window.location.href = "admin-dashboard.html";
+      }
+    });
+
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      loginMessage.textContent = "Logging in...";
+
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        loginMessage.textContent = "Login successful...";
+        window.location.href = "admin-dashboard.html";
+      } catch (error) {
+        loginMessage.textContent = error.message;
+      }
+    });
+  </script>
+</body>
+</html>
