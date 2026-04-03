@@ -156,21 +156,21 @@
       emptyProductsMessage.style.display = "none";
 
       products.forEach((product) => {
-        publicProductsContainer.innerHTML += `
-          <div class="product-card dynamic-product-card">
-            <img src="${product.image_url || 'https://via.placeholder.com/800x600?text=No+Image'}" alt="${product.name || 'Product'}">
-            <div class="card-content">
-              <div class="product-meta">
-                <span class="product-category">${product.category || 'Furniture'}</span>
-                <span class="product-price">${product.price || ''}</span>
-              </div>
-              <h3>${product.name || 'Untitled Product'}</h3>
-              <p>${product.description || 'No description available.'}</p>
-              <a href="contact.html" class="btn primary-btn small-btn">Request This Product</a>
-            </div>
-          </div>
-        `;
-      });
+  publicProductsContainer.innerHTML += `
+    <div class="product-card dynamic-product-card">
+      <img src="${product.imageUrl || 'https://via.placeholder.com/800x600?text=No+Image'}" alt="${product.name || 'Product'}">
+      <div class="card-content">
+        <div class="product-meta">
+          <span class="product-category">${product.category || 'Furniture'}</span>
+          <span class="product-price">${product.price || ''}</span>
+        </div>
+        <h3>${product.name || 'Untitled Product'}</h3>
+        <p>${product.description || 'No description available.'}</p>
+        <a href="contact.html" class="btn primary-btn small-btn">Request This Product</a>
+      </div>
+    </div>
+  `;
+});
     }
 
     function filterProducts() {
