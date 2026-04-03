@@ -28,11 +28,10 @@
     <div class="container">
       <div class="dashboard-welcome">
         <h1>Manage Furniture Products</h1>
-        <p>Add furniture items, upload images, and manage the company catalog.</p>
+        <p>Add products, upload real images, and manage the company catalog.</p>
       </div>
 
       <div class="dashboard-grid">
-        <!-- ADD PRODUCT -->
         <div class="dashboard-card add-product-card">
           <h2>Add New Product</h2>
 
@@ -41,16 +40,21 @@
             <input type="text" id="productCategory" placeholder="Category" required />
             <input type="text" id="productPrice" placeholder="Price" required />
             <textarea id="productDescription" rows="5" placeholder="Product Description" required></textarea>
-            <input type="file" id="productImage" accept="image/*" required />
+
+            <div class="image-upload-box">
+              <label for="productImage" class="image-upload-label">Choose Product Image</label>
+              <input type="file" id="productImage" accept="image/*" required />
+              <img id="imagePreview" class="image-preview" alt="Preview" style="display: none;">
+            </div>
 
             <button type="submit" class="btn primary-btn full-btn">Upload Product</button>
             <p id="productMessage" class="form-message"></p>
           </form>
         </div>
 
-        <!-- STATS -->
         <div class="dashboard-card stats-card">
           <h2>Quick Info</h2>
+
           <div class="stats-boxes">
             <div class="stat-box">
               <h3 id="totalProducts">0</h3>
@@ -66,15 +70,14 @@
             <h3>Tips</h3>
             <ul>
               <li>Use clear product names</li>
-              <li>Upload sharp furniture images</li>
-              <li>Keep category names simple</li>
-              <li>Add real prices for client presentation</li>
+              <li>Upload bright, sharp furniture images</li>
+              <li>Keep categories simple</li>
+              <li>Use real prices for client demo</li>
             </ul>
           </div>
         </div>
       </div>
 
-      <!-- PRODUCT LIST -->
       <div class="dashboard-card product-list-card">
         <div class="product-list-top">
           <h2>All Products</h2>
@@ -96,24 +99,25 @@
       getDocs,
       deleteDoc,
       doc,
-      orderBy,
       query,
+      orderBy,
       serverTimestamp
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
     import {
       getStorage,
       ref,
       uploadBytes,
-      getDownloadURL
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+      getDownloadURL,
+      deleteObject
+    } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyDqtHFCfIcy3qMcrpoW8F7QKRsHKBiqKZs",
-      authDomain: "ibm-global-furniture.firebaseapp.com",
-      projectId: "ibm-global-furniture",
-      storageBucket: "ibm-global-furniture.firebasestorage.app",
-      messagingSenderId: "764280237319",
-      appId: "1:764280237319:web:84688573ae6b0b07e1e9a2"
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -127,6 +131,8 @@
     const totalProducts = document.getElementById("totalProducts");
     const logoutBtn = document.getElementById("logoutBtn");
     const refreshBtn = document.getElementById("refreshBtn");
+    const productImageInput = document.getElementById("productImage");
+    const imagePreview = document.getElementById("imagePreview");
 
     onAuthStateChanged(auth, (user) => {
       if (!user) {
@@ -137,8 +143,28 @@
     });
 
     logoutBtn.addEventListener("click", async () => {
-      await signOut(auth);
-      window.location.href = "admin-login.html";
+      try {
+        await signOut(auth);
+        window.location.href = "admin-login.html";
+      } catch (error) {
+        alert(error.message);
+      }
+    });
+
+    productImageInput.addEventListener("change", () => {
+      const file = productImageInput.files[0];
+      if (!file) {
+        imagePreview.style.display = "none";
+        imagePreview.src = "";
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        imagePreview.src = e.target.result;
+        imagePreview.style.display = "block";
+      };
+      reader.readAsDataURL(file);
     });
 
     productForm.addEventListener("submit", async (e) => {
@@ -148,17 +174,19 @@
       const category = document.getElementById("productCategory").value.trim();
       const price = document.getElementById("productPrice").value.trim();
       const description = document.getElementById("productDescription").value.trim();
-      const imageFile = document.getElementById("productImage").files[0];
+      const imageFile = productImageInput.files[0];
 
       if (!imageFile) {
-        productMessage.textContent = "Please select an image.";
+        productMessage.textContent = "Please choose an image.";
         return;
       }
 
-      productMessage.textContent = "Uploading product...";
+      productMessage.textContent = "Uploading product... please wait.";
 
       try {
-        const imageRef = ref(storage, `products/${Date.now()}-${imageFile.name}`);
+        const fileName = `${Date.now()}-${imageFile.name}`;
+        const imageRef = ref(storage, `products/${fileName}`);
+
         await uploadBytes(imageRef, imageFile);
         const imageUrl = await getDownloadURL(imageRef);
 
@@ -168,11 +196,14 @@
           price,
           description,
           imageUrl,
+          imagePath: `products/${fileName}`,
           createdAt: serverTimestamp()
         });
 
         productMessage.textContent = "Product uploaded successfully.";
         productForm.reset();
+        imagePreview.src = "";
+        imagePreview.style.display = "none";
         loadProducts();
       } catch (error) {
         productMessage.textContent = error.message;
@@ -195,43 +226,50 @@
           return;
         }
 
-        let productsHTML = "";
+        let html = "";
 
         querySnapshot.forEach((docSnap) => {
           const product = docSnap.data();
 
-          productsHTML += `
+          html += `
             <div class="admin-product-card">
-              <img src="${product.imageUrl}" alt="${product.name}">
+              <img src="${product.imageUrl || ''}" alt="${product.name || 'Product image'}">
               <div class="admin-product-info">
-                <h3>${product.name}</h3>
-                <p><strong>Category:</strong> ${product.category}</p>
-                <p><strong>Price:</strong> ${product.price}</p>
-                <p>${product.description}</p>
-                <button class="btn delete-btn" data-id="${docSnap.id}">Delete</button>
+                <h3>${product.name || ''}</h3>
+                <p><strong>Category:</strong> ${product.category || ''}</p>
+                <p><strong>Price:</strong> ${product.price || ''}</p>
+                <p>${product.description || ''}</p>
+                <button class="btn delete-btn" data-id="${docSnap.id}" data-imagepath="${product.imagePath || ''}">
+                  Delete
+                </button>
               </div>
             </div>
           `;
         });
 
-        productsContainer.innerHTML = productsHTML;
+        productsContainer.innerHTML = html;
 
         document.querySelectorAll(".delete-btn").forEach((button) => {
           button.addEventListener("click", async () => {
-            const id = button.getAttribute("data-id");
+            const docId = button.getAttribute("data-id");
+            const imagePath = button.getAttribute("data-imagepath");
 
             const confirmDelete = confirm("Are you sure you want to delete this product?");
             if (!confirmDelete) return;
 
             try {
-              await deleteDoc(doc(db, "products", id));
+              if (imagePath) {
+                const imageRef = ref(storage, imagePath);
+                await deleteObject(imageRef).catch(() => {});
+              }
+
+              await deleteDoc(doc(db, "products", docId));
               loadProducts();
             } catch (error) {
               alert(error.message);
             }
           });
         });
-
       } catch (error) {
         productsContainer.innerHTML = `<p>${error.message}</p>`;
       }
