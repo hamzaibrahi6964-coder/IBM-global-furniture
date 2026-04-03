@@ -3,272 +3,73 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IBM Global Furniture | Admin Dashboard</title>
+  <title>IBM Global Furniture | Admin Login</title>
   <link rel="stylesheet" href="style.css" />
 </head>
-<body class="dashboard-body">
+<body class="admin-body">
 
-  <header class="dashboard-header">
-    <div class="container dashboard-topbar">
-      <div class="dashboard-brand">
-        <img src="logo.png" alt="Logo">
-        <div>
-          <h2>IBM GLOBAL FURNITURE</h2>
-          <p>Admin Dashboard</p>
-        </div>
+  <section class="admin-auth-section">
+    <div class="admin-auth-box">
+      <div class="admin-auth-logo">
+        <img src="logo.png" alt="IBM Global Furniture Logo">
+        <h1>IBM GLOBAL FURNITURE</h1>
+        <p>Admin Portal</p>
       </div>
 
-      <div class="dashboard-actions">
-        <button id="logoutBtn" class="btn secondary-dark-btn">Logout</button>
-      </div>
-    </div>
-  </header>
+      <form id="loginForm" class="admin-form">
+        <h2>Admin Login</h2>
+        <p class="admin-form-text">Login to manage products, images and website content.</p>
 
-  <section class="dashboard-section">
-    <div class="container">
-      <div class="dashboard-welcome">
-        <h1>Manage Furniture Products</h1>
-        <p>Add products, upload real images, and manage the company catalog.</p>
-      </div>
+        <input type="email" id="email" placeholder="Admin Email" required />
+        <input type="password" id="password" placeholder="Password" required />
 
-      <div class="dashboard-grid">
-        <div class="dashboard-card add-product-card">
-          <h2>Add New Product</h2>
-
-          <form id="productForm" class="admin-form">
-            <input type="text" id="productName" placeholder="Product Name" required />
-            <input type="text" id="productCategory" placeholder="Category" required />
-            <input type="text" id="productPrice" placeholder="Price" required />
-            <textarea id="productDescription" rows="5" placeholder="Product Description" required></textarea>
-
-            <div class="image-upload-box">
-              <label for="productImage" class="image-upload-label">Choose Product Image</label>
-              <input type="file" id="productImage" accept="image/*" required />
-              <img id="imagePreview" class="image-preview" alt="Preview" style="display: none;">
-            </div>
-
-            <button type="submit" class="btn primary-btn full-btn">Upload Product</button>
-            <p id="productMessage" class="form-message"></p>
-          </form>
-        </div>
-
-        <div class="dashboard-card stats-card">
-          <h2>Quick Info</h2>
-
-          <div class="stats-boxes">
-            <div class="stat-box">
-              <h3 id="totalProducts">0</h3>
-              <p>Total Products</p>
-            </div>
-            <div class="stat-box">
-              <h3>Live</h3>
-              <p>Catalog Status</p>
-            </div>
-          </div>
-
-          <div class="tips-box">
-            <h3>Tips</h3>
-            <ul>
-              <li>Use clear product names</li>
-              <li>Upload bright, sharp furniture images</li>
-              <li>Keep categories simple</li>
-              <li>Use real prices for client demo</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <div class="dashboard-card product-list-card">
-        <div class="product-list-top">
-          <h2>All Products</h2>
-          <button id="refreshBtn" class="btn primary-btn">Refresh</button>
-        </div>
-
-        <div id="productsContainer" class="admin-product-grid"></div>
-      </div>
+        <button type="submit" class="btn primary-btn full-btn">Login</button>
+        <p id="loginMessage" class="form-message"></p>
+      </form>
     </div>
   </section>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
-    import {
-      getFirestore,
-      collection,
-      addDoc,
-      getDocs,
-      deleteDoc,
-      doc,
-      query,
-      orderBy,
-      serverTimestamp
-    } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
-    import {
-      getStorage,
-      ref,
-      uploadBytes,
-      getDownloadURL,
-      deleteObject
-    } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
     const firebaseConfig = {
-      
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
     };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const db = getFirestore(app);
-    const storage = getStorage(app);
 
-    const productForm = document.getElementById("productForm");
-    const productMessage = document.getElementById("productMessage");
-    const productsContainer = document.getElementById("productsContainer");
-    const totalProducts = document.getElementById("totalProducts");
-    const logoutBtn = document.getElementById("logoutBtn");
-    const refreshBtn = document.getElementById("refreshBtn");
-    const productImageInput = document.getElementById("productImage");
-    const imagePreview = document.getElementById("imagePreview");
+    const loginForm = document.getElementById("loginForm");
+    const loginMessage = document.getElementById("loginMessage");
 
     onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        window.location.href = "admin-login.html";
-      } else {
-        loadProducts();
+      if (user) {
+        window.location.href = "admin-dashboard.html";
       }
     });
 
-    logoutBtn.addEventListener("click", async () => {
-      try {
-        await signOut(auth);
-        window.location.href = "admin-login.html";
-      } catch (error) {
-        alert(error.message);
-      }
-    });
-
-    productImageInput.addEventListener("change", () => {
-      const file = productImageInput.files[0];
-      if (!file) {
-        imagePreview.style.display = "none";
-        imagePreview.src = "";
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        imagePreview.src = e.target.result;
-        imagePreview.style.display = "block";
-      };
-      reader.readAsDataURL(file);
-    });
-
-    productForm.addEventListener("submit", async (e) => {
+    loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      const name = document.getElementById("productName").value.trim();
-      const category = document.getElementById("productCategory").value.trim();
-      const price = document.getElementById("productPrice").value.trim();
-      const description = document.getElementById("productDescription").value.trim();
-      const imageFile = productImageInput.files[0];
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
 
-      if (!imageFile) {
-        productMessage.textContent = "Please choose an image.";
-        return;
-      }
-
-      productMessage.textContent = "Uploading product... please wait.";
+      loginMessage.textContent = "Logging in...";
 
       try {
-        const fileName = `${Date.now()}-${imageFile.name}`;
-        const imageRef = ref(storage, `products/${fileName}`);
-
-        await uploadBytes(imageRef, imageFile);
-        const imageUrl = await getDownloadURL(imageRef);
-
-        await addDoc(collection(db, "products"), {
-          name,
-          category,
-          price,
-          description,
-          imageUrl,
-          imagePath: `products/${fileName}`,
-          createdAt: serverTimestamp()
-        });
-
-        productMessage.textContent = "Product uploaded successfully.";
-        productForm.reset();
-        imagePreview.src = "";
-        imagePreview.style.display = "none";
-        loadProducts();
+        await signInWithEmailAndPassword(auth, email, password);
+        loginMessage.textContent = "Login successful...";
+        window.location.href = "admin-dashboard.html";
       } catch (error) {
-        productMessage.textContent = error.message;
+        loginMessage.textContent = error.message;
       }
     });
-
-    refreshBtn.addEventListener("click", loadProducts);
-
-    async function loadProducts() {
-      productsContainer.innerHTML = "<p>Loading products...</p>";
-
-      try {
-        const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
-        const querySnapshot = await getDocs(q);
-
-        totalProducts.textContent = querySnapshot.size;
-
-        if (querySnapshot.empty) {
-          productsContainer.innerHTML = "<p>No products added yet.</p>";
-          return;
-        }
-
-        let html = "";
-
-        querySnapshot.forEach((docSnap) => {
-          const product = docSnap.data();
-
-          html += `
-            <div class="admin-product-card">
-              <img src="${product.imageUrl || ''}" alt="${product.name || 'Product image'}">
-              <div class="admin-product-info">
-                <h3>${product.name || ''}</h3>
-                <p><strong>Category:</strong> ${product.category || ''}</p>
-                <p><strong>Price:</strong> ${product.price || ''}</p>
-                <p>${product.description || ''}</p>
-                <button class="btn delete-btn" data-id="${docSnap.id}" data-imagepath="${product.imagePath || ''}">
-                  Delete
-                </button>
-              </div>
-            </div>
-          `;
-        });
-
-        productsContainer.innerHTML = html;
-
-        document.querySelectorAll(".delete-btn").forEach((button) => {
-          button.addEventListener("click", async () => {
-            const docId = button.getAttribute("data-id");
-            const imagePath = button.getAttribute("data-imagepath");
-
-            const confirmDelete = confirm("Are you sure you want to delete this product?");
-            if (!confirmDelete) return;
-
-            try {
-              if (imagePath) {
-                const imageRef = ref(storage, imagePath);
-                await deleteObject(imageRef).catch(() => {});
-              }
-
-              await deleteDoc(doc(db, "products", docId));
-              loadProducts();
-            } catch (error) {
-              alert(error.message);
-            }
-          });
-        });
-      } catch (error) {
-        productsContainer.innerHTML = `<p>${error.message}</p>`;
-      }
-    }
   </script>
 </body>
 </html>
