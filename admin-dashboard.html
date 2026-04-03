@@ -11,7 +11,7 @@
   <header class="dashboard-header">
     <div class="container dashboard-topbar">
       <div class="dashboard-brand">
-        <img src="logo.png" alt="Logo">
+        <img src="IBM GLOBAL F.png" alt="Logo">
         <div>
           <h2>IBM GLOBAL FURNITURE</h2>
           <p>Admin Dashboard</p>
@@ -24,7 +24,7 @@
     <div class="container">
       <div class="dashboard-welcome">
         <h1>Manage Furniture Products</h1>
-        <p>Add products directly to Supabase.</p>
+        <p>Add products and upload real images directly from the dashboard.</p>
       </div>
 
       <div class="dashboard-grid">
@@ -36,15 +36,21 @@
             <input type="text" id="productCategory" placeholder="Category" required />
             <input type="text" id="productPrice" placeholder="Price" required />
             <textarea id="productDescription" rows="5" placeholder="Product Description" required></textarea>
-            <input type="text" id="productImageUrl" placeholder="Paste Image URL" required />
 
-            <button type="submit" class="btn primary-btn full-btn">Add Product</button>
+            <div class="image-upload-box">
+              <label for="productImage" class="image-upload-label">Choose Product Image</label>
+              <input type="file" id="productImage" accept="image/*" required />
+              <img id="imagePreview" class="image-preview" alt="Preview" style="display: none;">
+            </div>
+
+            <button type="submit" class="btn primary-btn full-btn">Upload Product</button>
             <p id="productMessage" class="form-message"></p>
           </form>
         </div>
 
         <div class="dashboard-card stats-card">
           <h2>Quick Info</h2>
+
           <div class="stats-boxes">
             <div class="stat-box">
               <h3 id="totalProducts">0</h3>
@@ -54,6 +60,16 @@
               <h3>Live</h3>
               <p>Catalog Status</p>
             </div>
+          </div>
+
+          <div class="tips-box">
+            <h3>Tips</h3>
+            <ul>
+              <li>Use clear product names</li>
+              <li>Upload bright, sharp furniture images</li>
+              <li>Keep categories simple</li>
+              <li>Use real prices for client demo</li>
+            </ul>
           </div>
         </div>
       </div>
@@ -81,6 +97,24 @@
     const productsContainer = document.getElementById("productsContainer");
     const totalProducts = document.getElementById("totalProducts");
     const refreshBtn = document.getElementById("refreshBtn");
+    const productImageInput = document.getElementById("productImage");
+    const imagePreview = document.getElementById("imagePreview");
+
+    productImageInput.addEventListener("change", () => {
+      const file = productImageInput.files[0];
+      if (!file) {
+        imagePreview.style.display = "none";
+        imagePreview.src = "";
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        imagePreview.src = e.target.result;
+        imagePreview.style.display = "block";
+      };
+      reader.readAsDataURL(file);
+    });
 
     async function loadProducts() {
       productsContainer.innerHTML = "<p>Loading products...</p>";
@@ -107,13 +141,15 @@
       data.forEach((product) => {
         html += `
           <div class="admin-product-card">
-            <img src="${product.imageUrl || ''}" alt="${product.name || 'Product'}">
+            <img src="${product.image_url || ''}" alt="${product.name || 'Product'}">
             <div class="admin-product-info">
               <h3>${product.name || ''}</h3>
               <p><strong>Category:</strong> ${product.category || ''}</p>
               <p><strong>Price:</strong> ${product.price || ''}</p>
               <p>${product.description || ''}</p>
-              <button class="btn delete-btn" data-id="${product.id}">Delete</button>
+              <button class="btn delete-btn" data-id="${product.id}" data-image="${product.image_url || ''}">
+                Delete
+              </button>
             </div>
           </div>
         `;
@@ -124,20 +160,32 @@
       document.querySelectorAll(".delete-btn").forEach((button) => {
         button.addEventListener("click", async () => {
           const id = button.getAttribute("data-id");
+          const imageUrl = button.getAttribute("data-image");
           const ok = confirm("Delete this product?");
           if (!ok) return;
 
-          const { error } = await supabaseClient
-            .from("products")
-            .delete()
-            .eq("id", id);
+          try {
+            if (imageUrl && imageUrl.includes("/storage/v1/object/public/product-images/")) {
+              const filePath = imageUrl.split("/storage/v1/object/public/product-images/")[1];
+              if (filePath) {
+                await supabaseClient.storage.from("product-images").remove([filePath]);
+              }
+            }
 
-          if (error) {
-            alert(error.message);
-            return;
+            const { error } = await supabaseClient
+              .from("products")
+              .delete()
+              .eq("id", id);
+
+            if (error) {
+              alert(error.message);
+              return;
+            }
+
+            loadProducts();
+          } catch (err) {
+            alert(err.message);
           }
-
-          loadProducts();
         });
       });
     }
@@ -149,24 +197,54 @@
       const category = document.getElementById("productCategory").value.trim();
       const price = document.getElementById("productPrice").value.trim();
       const description = document.getElementById("productDescription").value.trim();
-      const imageUrl = document.getElementById("productImageUrl").value.trim();
+      const imageFile = productImageInput.files[0];
 
-      productMessage.textContent = "Adding product...";
-
-      const { error } = await supabaseClient
-        .from("products")
-        .insert([
-          { name, category, price, description, imageUrl }
-        ]);
-
-      if (error) {
-        productMessage.textContent = error.message;
+      if (!imageFile) {
+        productMessage.textContent = "Please choose an image.";
         return;
       }
 
-      productMessage.textContent = "Product added successfully.";
-      productForm.reset();
-      loadProducts();
+      productMessage.textContent = "Uploading product... please wait.";
+
+      try {
+        const fileExt = imageFile.name.split(".").pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
+        const filePath = `products/${fileName}`;
+
+        const { error: uploadError } = await supabaseClient.storage
+          .from("product-images")
+          .upload(filePath, imageFile);
+
+        if (uploadError) {
+          productMessage.textContent = uploadError.message;
+          return;
+        }
+
+        const { data: publicUrlData } = supabaseClient.storage
+          .from("product-images")
+          .getPublicUrl(filePath);
+
+        const image_url = publicUrlData.publicUrl;
+
+        const { error: insertError } = await supabaseClient
+          .from("products")
+          .insert([
+            { name, category, price, description, image_url }
+          ]);
+
+        if (insertError) {
+          productMessage.textContent = insertError.message;
+          return;
+        }
+
+        productMessage.textContent = "Product uploaded successfully.";
+        productForm.reset();
+        imagePreview.src = "";
+        imagePreview.style.display = "none";
+        loadProducts();
+      } catch (error) {
+        productMessage.textContent = error.message;
+      }
     });
 
     refreshBtn.addEventListener("click", loadProducts);
