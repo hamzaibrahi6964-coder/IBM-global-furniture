@@ -42,9 +42,7 @@
     <div class="container">
       <div class="section-title">
         <h2>Furniture Collection</h2>
-        <p>
-          These products are loaded directly from the admin dashboard.
-        </p>
+        <p>These products are loaded directly from Supabase.</p>
       </div>
 
       <div class="products-top-bar">
@@ -56,33 +54,9 @@
 
       <div id="publicProductsContainer" class="card-grid"></div>
 
-      <div id="emptyProductsMessage" class="empty-products-message" style="display: none;">
+      <div id="emptyProductsMessage" class="empty-products-message" style="display:none;">
         <h3>No products found</h3>
-        <p>Please add products from the admin dashboard or change your search/filter.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="section alt-bg">
-    <div class="container">
-      <div class="section-title">
-        <h2>Why Our Products Stand Out</h2>
-        <p>Every piece is selected or produced with quality, comfort and presentation in mind.</p>
-      </div>
-
-      <div class="feature-grid">
-        <div class="feature-card">
-          <h3>Fine Finishing</h3>
-          <p>Our furniture is presented with a polished and premium finish.</p>
-        </div>
-        <div class="feature-card">
-          <h3>Comfort & Function</h3>
-          <p>We combine beauty and practical everyday use in every collection.</p>
-        </div>
-        <div class="feature-card">
-          <h3>Long-Lasting Value</h3>
-          <p>We focus on durable furniture that adds long-term value to your space.</p>
-        </div>
+        <p>Please add products in Supabase or change your search/filter.</p>
       </div>
     </div>
   </section>
@@ -118,21 +92,12 @@
 
   <a href="https://wa.me/2340000000000" target="_blank" class="whatsapp-float">💬</a>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://ecixygqmmfdaljpqyzkj.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_cGw6sDpRlMo9iN8VnOU6Rw_nJT2e_N2";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDqtHFCfIcy3qMcrpoW8F7QKRsHKBiqKZs",
-      authDomain: "ibm-global-furniture.firebaseapp.com",
-      projectId: "ibm-global-furniture",
-      storageBucket: "ibm-global-furniture.firebasestorage.app",
-      messagingSenderId: "764280237319",
-      appId: "1:764280237319:web:84688573ae6b0b07e1e9a2"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     const menuToggle = document.getElementById("menuToggle");
     const navLinks = document.getElementById("navLinks");
@@ -147,39 +112,33 @@
       navLinks.classList.toggle("show");
     });
 
-    async function loadPublicProducts() {
+    async function loadProducts() {
       publicProductsContainer.innerHTML = "<p>Loading products...</p>";
       emptyProductsMessage.style.display = "none";
 
-      try {
-        const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
-        const querySnapshot = await getDocs(q);
+      const { data, error } = await supabaseClient
+        .from("products")
+        .select("*")
+        .order("created_at", { ascending: false });
 
-        allProducts = [];
-
-        querySnapshot.forEach((docSnap) => {
-          allProducts.push({
-            id: docSnap.id,
-            ...docSnap.data()
-          });
-        });
-
-        populateCategoryFilter(allProducts);
-        renderProducts(allProducts);
-      } catch (error) {
+      if (error) {
         publicProductsContainer.innerHTML = `
           <div class="simple-card">
             <h3>Unable to load products</h3>
             <p>${error.message}</p>
           </div>
         `;
+        return;
       }
+
+      allProducts = data || [];
+      populateCategoryFilter(allProducts);
+      renderProducts(allProducts);
     }
 
     function populateCategoryFilter(products) {
-      const categories = [...new Set(products.map(product => product.category).filter(Boolean))];
-
-      categoryFilter.innerHTML = `<option value="all">All Categories</option>`;
+      const categories = [...new Set(products.map(item => item.category).filter(Boolean))];
+      categoryFilter.innerHTML = '<option value="all">All Categories</option>';
 
       categories.forEach((category) => {
         categoryFilter.innerHTML += `<option value="${category}">${category}</option>`;
@@ -199,7 +158,7 @@
       products.forEach((product) => {
         publicProductsContainer.innerHTML += `
           <div class="product-card dynamic-product-card">
-            <img src="${product.imageUrl || 'https://via.placeholder.com/800x600?text=No+Image'}" alt="${product.name}">
+            <img src="${product.image_url || 'https://via.placeholder.com/800x600?text=No+Image'}" alt="${product.name || 'Product'}">
             <div class="card-content">
               <div class="product-meta">
                 <span class="product-category">${product.category || 'Furniture'}</span>
@@ -219,14 +178,14 @@
       const selectedCategory = categoryFilter.value;
 
       const filtered = allProducts.filter((product) => {
-        const productName = (product.name || "").toLowerCase();
-        const productCategory = (product.category || "").toLowerCase();
-        const productDescription = (product.description || "").toLowerCase();
+        const name = (product.name || "").toLowerCase();
+        const category = (product.category || "").toLowerCase();
+        const description = (product.description || "").toLowerCase();
 
         const matchesSearch =
-          productName.includes(searchValue) ||
-          productCategory.includes(searchValue) ||
-          productDescription.includes(searchValue);
+          name.includes(searchValue) ||
+          category.includes(searchValue) ||
+          description.includes(searchValue);
 
         const matchesCategory =
           selectedCategory === "all" || product.category === selectedCategory;
@@ -240,7 +199,7 @@
     searchInput.addEventListener("input", filterProducts);
     categoryFilter.addEventListener("change", filterProducts);
 
-    loadPublicProducts();
+    loadProducts();
   </script>
 </body>
 </html>
