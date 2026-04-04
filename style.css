@@ -1600,3 +1600,33 @@ a {
   margin-top: 14px;
   border: 1px solid #ddd;
 }
+
+.products-top-bar {
+  margin-bottom: 30px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.product-card img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 10px;
+  display: block;
+}
+
+.card-grid {
+  margin-top: 20px;
+}
+
+.product-card {
+  overflow: hidden;
+  border-radius: 14px;
+  transition: 0.3s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
