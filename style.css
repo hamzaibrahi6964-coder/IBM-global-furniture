@@ -1630,3 +1630,18 @@ a {
   transform: translateY(-6px);
   box-shadow: 0 10px 25px rgba(0,0,0,0.15);
 }
+
+.products-top-bar input,
+.products-top-bar select {
+  padding: 12px 14px;
+  border: 1px solid #d8cfc7;
+  border-radius: 8px;
+  outline: none;
+  font-size: 14px;
+  background: #fff;
+}
+
+.products-top-bar input:focus,
+.products-top-bar select:focus {
+  border-color: #c07a43;
+}
