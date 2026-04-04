@@ -162,7 +162,9 @@
       <div class="card-content">
         <div class="product-meta">
           <span class="product-category">${product.category || 'Furniture'}</span>
-          <span class="product-price">${product.price || ''}</span>
+<span class="product-price">
+  ₦${Number(product.price || 0).toLocaleString()}
+</span>
         </div>
         <h3>${product.name || 'Untitled Product'}</h3>
         <p>${product.description || 'No description available.'}</p>
