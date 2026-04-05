@@ -34,21 +34,23 @@
   <section class="page-banner">
     <div class="container">
       <h1>Our Gallery</h1>
-      <p>Explore premium furniture inspiration for homes, offices and commercial spaces.</p>
+      <p>Explore premium furniture inspiration for homes, offices and luxury spaces.</p>
     </div>
   </section>
 
   <section class="section">
-    <div class="container gallery-grid">
-      <img src="https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1000&q=80" alt="Furniture gallery 1">
-      <img src="https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1000&q=80" alt="Furniture gallery 2">
-      <img src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1000&q=80" alt="Furniture gallery 3">
-      <img src="https://images.unsplash.com/photo-1449247709967-d4461a6a6103?auto=format&fit=crop&w=1000&q=80" alt="Furniture gallery 4">
-      <img src="https://images.unsplash.com/photo-1505693532989-17bda9d4d6d3?auto=format&fit=crop&w=1000&q=80" alt="Furniture gallery 5">
-      <img src="https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1000&q=80" alt="Furniture gallery 6">
-      <img src="https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1000&q=80" alt="Furniture gallery 7">
-      <img src="https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1000&q=80" alt="Furniture gallery 8">
-      <img src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1000&q=80" alt="Furniture gallery 9">
+    <div class="container">
+      <div class="section-title">
+        <h2>Showroom & Furniture Gallery</h2>
+        <p>These gallery images are loaded directly from Supabase.</p>
+      </div>
+
+      <div id="publicGalleryContainer" class="gallery-grid"></div>
+
+      <div id="emptyGalleryMessage" class="empty-products-message" style="display:none;">
+        <h3>No gallery images found</h3>
+        <p>Please upload gallery images from the admin gallery page.</p>
+      </div>
     </div>
   </section>
 
@@ -83,13 +85,62 @@
 
   <a href="https://wa.me/2340000000000" target="_blank" class="whatsapp-float">💬</a>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
+    const SUPABASE_URL = "https://ecixygqmmfdaljpqyzkj.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_cGw6sDpRlMo9iN8VnOU6Rw_nJT2e_N2";
+
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
     const menuToggle = document.getElementById("menuToggle");
     const navLinks = document.getElementById("navLinks");
+    const publicGalleryContainer = document.getElementById("publicGalleryContainer");
+    const emptyGalleryMessage = document.getElementById("emptyGalleryMessage");
 
     menuToggle.addEventListener("click", () => {
       navLinks.classList.toggle("show");
     });
+
+    async function loadGallery() {
+      publicGalleryContainer.innerHTML = "<p>Loading gallery images...</p>";
+      emptyGalleryMessage.style.display = "none";
+
+      const { data, error } = await supabaseClient
+        .from("gallery")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        publicGalleryContainer.innerHTML = `
+          <div class="simple-card">
+            <h3>Unable to load gallery</h3>
+            <p>${error.message}</p>
+          </div>
+        `;
+        return;
+      }
+
+      if (!data.length) {
+        publicGalleryContainer.innerHTML = "";
+        emptyGalleryMessage.style.display = "block";
+        return;
+      }
+
+      publicGalleryContainer.innerHTML = "";
+
+      data.forEach((item) => {
+        publicGalleryContainer.innerHTML += `
+          <div class="gallery-card">
+            <img src="${item.image_url}" alt="${item.title || 'Gallery image'}">
+            <div class="gallery-card-content">
+              <h3>${item.title || 'Gallery Image'}</h3>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    loadGallery();
   </script>
 </body>
 </html>
