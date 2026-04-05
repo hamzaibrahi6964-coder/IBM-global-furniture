@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IBM Global Furniture | Admin Gallery</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="dashboard-body">
+
+  <header class="dashboard-header">
+    <div class="container dashboard-topbar">
+      <div class="dashboard-brand">
+        <img src="IBM GLOBAL F.png" alt="Logo">
+        <div>
+          <h2>IBM GLOBAL FURNITURE</h2>
+          <p>Gallery Manager</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="dashboard-section">
+    <div class="container">
+      <div class="dashboard-welcome">
+        <h1>Manage Gallery Images</h1>
+        <p>Upload showroom and furniture photos for the public gallery page.</p>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="dashboard-card add-product-card">
+          <h2>Add Gallery Image</h2>
+
+          <form id="galleryForm" class="admin-form">
+            <input type="text" id="galleryTitle" placeholder="Image Title" required />
+
+            <div class="image-upload-box">
+              <label for="galleryImage" class="image-upload-label">Choose Gallery Image</label>
+              <input type="file" id="galleryImage" accept="image/*" required />
+              <img id="galleryPreview" class="image-preview" alt="Preview" style="display:none;">
+            </div>
+
+            <button type="submit" class="btn primary-btn full-btn">Upload Gallery Image</button>
+            <p id="galleryMessage" class="form-message"></p>
+          </form>
+        </div>
+
+        <div class="dashboard-card stats-card">
+          <h2>Gallery Info</h2>
+
+          <div class="stats-boxes">
+            <div class="stat-box">
+              <h3 id="totalGalleryImages">0</h3>
+              <p>Total Images</p>
+            </div>
+            <div class="stat-box">
+              <h3>Live</h3>
+              <p>Gallery Status</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-card product-list-card">
+        <div class="product-list-top">
+          <h2>All Gallery Images</h2>
+          <button id="refreshGalleryBtn" class="btn primary-btn">Refresh</button>
+        </div>
+
+        <div id="galleryContainer" class="admin-product-grid"></div>
+      </div>
+    </div>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://ecixygqmmfdaljpqyzkj.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_cGw6sDpRlMo9iN8VnOU6Rw_nJT2e_N2";
+
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const galleryForm = document.getElementById("galleryForm");
+    const galleryMessage = document.getElementById("galleryMessage");
+    const galleryContainer = document.getElementById("galleryContainer");
+    const totalGalleryImages = document.getElementById("totalGalleryImages");
+    const refreshGalleryBtn = document.getElementById("refreshGalleryBtn");
+    const galleryImageInput = document.getElementById("galleryImage");
+    const galleryPreview = document.getElementById("galleryPreview");
+
+    galleryImageInput.addEventListener("change", () => {
+      const file = galleryImageInput.files[0];
+      if (!file) {
+        galleryPreview.style.display = "none";
+        galleryPreview.src = "";
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        galleryPreview.src = e.target.result;
+        galleryPreview.style.display = "block";
+      };
+      reader.readAsDataURL(file);
+    });
+
+    async function loadGalleryImages() {
+      galleryContainer.innerHTML = "<p>Loading gallery images...</p>";
+
+      const { data, error } = await supabaseClient
+        .from("gallery")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        galleryContainer.innerHTML = `<p>${error.message}</p>`;
+        return;
+      }
+
+      totalGalleryImages.textContent = data.length;
+
+      if (!data.length) {
+        galleryContainer.innerHTML = "<p>No gallery images yet.</p>";
+        return;
+      }
+
+      let html = "";
+
+      data.forEach((item) => {
+        html += `
+          <div class="admin-product-card">
+            <img src="${item.image_url || ''}" alt="${item.title || 'Gallery image'}">
+            <div class="admin-product-info">
+              <h3>${item.title || ''}</h3>
+              <button class="btn delete-btn" data-id="${item.id}" data-image="${item.image_url || ''}">
+                Delete
+              </button>
+            </div>
+          </div>
+        `;
+      });
+
+      galleryContainer.innerHTML = html;
+
+      document.querySelectorAll(".delete-btn").forEach((button) => {
+        button.addEventListener("click", async () => {
+          const id = button.getAttribute("data-id");
+          const imageUrl = button.getAttribute("data-image");
+          const ok = confirm("Delete this gallery image?");
+          if (!ok) return;
+
+          try {
+            if (imageUrl && imageUrl.includes("/storage/v1/object/public/gallery-images/")) {
+              const filePath = imageUrl.split("/storage/v1/object/public/gallery-images/")[1];
+              if (filePath) {
+                await supabaseClient.storage.from("gallery-images").remove([filePath]);
+              }
+            }
+
+            const { error } = await supabaseClient
+              .from("gallery")
+              .delete()
+              .eq("id", id);
+
+            if (error) {
+              alert(error.message);
+              return;
+            }
+
+            loadGalleryImages();
+          } catch (err) {
+            alert(err.message);
+          }
+        });
+      });
+    }
+
+    galleryForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const title = document.getElementById("galleryTitle").value.trim();
+      const imageFile = galleryImageInput.files[0];
+
+      if (!imageFile) {
+        galleryMessage.textContent = "Please choose an image.";
+        return;
+      }
+
+      galleryMessage.textContent = "Uploading gallery image... please wait.";
+
+      try {
+        const fileExt = imageFile.name.split(".").pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
+        const filePath = `gallery/${fileName}`;
+
+        const { error: uploadError } = await supabaseClient.storage
+          .from("gallery-images")
+          .upload(filePath, imageFile);
+
+        if (uploadError) {
+          galleryMessage.textContent = uploadError.message;
+          return;
+        }
+
+        const { data } = supabaseClient.storage
+          .from("gallery-images")
+          .getPublicUrl(filePath);
+
+        const image_url = data.publicUrl;
+
+        const { error: insertError } = await supabaseClient
+          .from("gallery")
+          .insert([{ title, image_url }]);
+
+        if (insertError) {
+          galleryMessage.textContent = insertError.message;
+          return;
+        }
+
+        galleryMessage.textContent = "Gallery image uploaded successfully.";
+        galleryForm.reset();
+        galleryPreview.src = "";
+        galleryPreview.style.display = "none";
+        loadGalleryImages();
+      } catch (error) {
+        galleryMessage.textContent = error.message;
+      }
+    });
+
+    refreshGalleryBtn.addEventListener("click", loadGalleryImages);
+
+    loadGalleryImages();
+  </script>
+</body>
+</html>
