@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IBM Global Furniture | Admin Dashboard</title>
+  <title>IBM Global Furniture | Admin Gallery</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body class="dashboard-body">
@@ -14,7 +14,7 @@
         <img src="IBM GLOBAL F.png" alt="Logo">
         <div>
           <h2>IBM GLOBAL FURNITURE</h2>
-          <p>Admin Dashboard</p>
+          <p>Gallery Manager</p>
         </div>
       </div>
     </div>
@@ -23,64 +23,51 @@
   <section class="dashboard-section">
     <div class="container">
       <div class="dashboard-welcome">
-        <h1>Manage Furniture Products</h1>
-        <p>Add products and upload real images directly from the dashboard.</p>
+        <h1>Manage Gallery Images</h1>
+        <p>Upload showroom and furniture photos for the public gallery page.</p>
       </div>
 
       <div class="dashboard-grid">
         <div class="dashboard-card add-product-card">
-          <h2>Add New Product</h2>
+          <h2>Add Gallery Image</h2>
 
-          <form id="productForm" class="admin-form">
-            <input type="text" id="productName" placeholder="Product Name" required />
-            <input type="text" id="productCategory" placeholder="Category" required />
-            <input type="text" id="productPrice" placeholder="Price" required />
-            <textarea id="productDescription" rows="5" placeholder="Product Description" required></textarea>
+          <form id="galleryForm" class="admin-form">
+            <input type="text" id="galleryTitle" placeholder="Image Title" required />
 
             <div class="image-upload-box">
-              <label for="productImage" class="image-upload-label">Choose Product Image</label>
-              <input type="file" id="productImage" accept="image/*" required />
-              <img id="imagePreview" class="image-preview" alt="Preview" style="display: none;">
+              <label for="galleryImage" class="image-upload-label">Choose Gallery Image</label>
+              <input type="file" id="galleryImage" accept="image/*" required />
+              <img id="galleryPreview" class="image-preview" alt="Preview" style="display:none;">
             </div>
 
-            <button type="submit" class="btn primary-btn full-btn">Upload Product</button>
-            <p id="productMessage" class="form-message"></p>
+            <button type="submit" class="btn primary-btn full-btn">Upload Gallery Image</button>
+            <p id="galleryMessage" class="form-message"></p>
           </form>
         </div>
 
         <div class="dashboard-card stats-card">
-          <h2>Quick Info</h2>
+          <h2>Gallery Info</h2>
 
           <div class="stats-boxes">
             <div class="stat-box">
-              <h3 id="totalProducts">0</h3>
-              <p>Total Products</p>
+              <h3 id="totalGalleryImages">0</h3>
+              <p>Total Images</p>
             </div>
             <div class="stat-box">
               <h3>Live</h3>
-              <p>Catalog Status</p>
+              <p>Gallery Status</p>
             </div>
-          </div>
-
-          <div class="tips-box">
-            <h3>Tips</h3>
-            <ul>
-              <li>Use clear product names</li>
-              <li>Upload bright, sharp furniture images</li>
-              <li>Keep categories simple</li>
-              <li>Use real prices for client demo</li>
-            </ul>
           </div>
         </div>
       </div>
 
       <div class="dashboard-card product-list-card">
         <div class="product-list-top">
-          <h2>All Products</h2>
-          <button id="refreshBtn" class="btn primary-btn">Refresh</button>
+          <h2>All Gallery Images</h2>
+          <button id="refreshGalleryBtn" class="btn primary-btn">Refresh</button>
         </div>
 
-        <div id="productsContainer" class="admin-product-grid"></div>
+        <div id="galleryContainer" class="admin-product-grid"></div>
       </div>
     </div>
   </section>
@@ -92,62 +79,59 @@
 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const productForm = document.getElementById("productForm");
-    const productMessage = document.getElementById("productMessage");
-    const productsContainer = document.getElementById("productsContainer");
-    const totalProducts = document.getElementById("totalProducts");
-    const refreshBtn = document.getElementById("refreshBtn");
-    const productImageInput = document.getElementById("productImage");
-    const imagePreview = document.getElementById("imagePreview");
+    const galleryForm = document.getElementById("galleryForm");
+    const galleryMessage = document.getElementById("galleryMessage");
+    const galleryContainer = document.getElementById("galleryContainer");
+    const totalGalleryImages = document.getElementById("totalGalleryImages");
+    const refreshGalleryBtn = document.getElementById("refreshGalleryBtn");
+    const galleryImageInput = document.getElementById("galleryImage");
+    const galleryPreview = document.getElementById("galleryPreview");
 
-    productImageInput.addEventListener("change", () => {
-      const file = productImageInput.files[0];
+    galleryImageInput.addEventListener("change", () => {
+      const file = galleryImageInput.files[0];
       if (!file) {
-        imagePreview.style.display = "none";
-        imagePreview.src = "";
+        galleryPreview.style.display = "none";
+        galleryPreview.src = "";
         return;
       }
 
       const reader = new FileReader();
       reader.onload = function (e) {
-        imagePreview.src = e.target.result;
-        imagePreview.style.display = "block";
+        galleryPreview.src = e.target.result;
+        galleryPreview.style.display = "block";
       };
       reader.readAsDataURL(file);
     });
 
-    async function loadProducts() {
-      productsContainer.innerHTML = "<p>Loading products...</p>";
+    async function loadGalleryImages() {
+      galleryContainer.innerHTML = "<p>Loading gallery images...</p>";
 
       const { data, error } = await supabaseClient
-        .from("products")
+        .from("gallery")
         .select("*")
         .order("created_at", { ascending: false });
 
       if (error) {
-        productsContainer.innerHTML = `<p>${error.message}</p>`;
+        galleryContainer.innerHTML = `<p>${error.message}</p>`;
         return;
       }
 
-      totalProducts.textContent = data.length;
+      totalGalleryImages.textContent = data.length;
 
       if (!data.length) {
-        productsContainer.innerHTML = "<p>No products added yet.</p>";
+        galleryContainer.innerHTML = "<p>No gallery images yet.</p>";
         return;
       }
 
       let html = "";
 
-      data.forEach((product) => {
+      data.forEach((item) => {
         html += `
           <div class="admin-product-card">
-            <img src="${product.image_url || ''}" alt="${product.name || 'Product'}">
+            <img src="${item.image_url || ''}" alt="${item.title || 'Gallery image'}">
             <div class="admin-product-info">
-              <h3>${product.name || ''}</h3>
-              <p><strong>Category:</strong> ${product.category || ''}</p>
-              <p><strong>Price:</strong> ${product.price || ''}</p>
-              <p>${product.description || ''}</p>
-              <button class="btn delete-btn" data-id="${product.id}" data-image="${product.image_url || ''}">
+              <h3>${item.title || ''}</h3>
+              <button class="btn delete-btn" data-id="${item.id}" data-image="${item.image_url || ''}">
                 Delete
               </button>
             </div>
@@ -155,25 +139,25 @@
         `;
       });
 
-      productsContainer.innerHTML = html;
+      galleryContainer.innerHTML = html;
 
       document.querySelectorAll(".delete-btn").forEach((button) => {
         button.addEventListener("click", async () => {
           const id = button.getAttribute("data-id");
           const imageUrl = button.getAttribute("data-image");
-          const ok = confirm("Delete this product?");
+          const ok = confirm("Delete this gallery image?");
           if (!ok) return;
 
           try {
-            if (imageUrl && imageUrl.includes("/storage/v1/object/public/product-images/")) {
-              const filePath = imageUrl.split("/storage/v1/object/public/product-images/")[1];
+            if (imageUrl && imageUrl.includes("/storage/v1/object/public/gallery-images/")) {
+              const filePath = imageUrl.split("/storage/v1/object/public/gallery-images/")[1];
               if (filePath) {
-                await supabaseClient.storage.from("product-images").remove([filePath]);
+                await supabaseClient.storage.from("gallery-images").remove([filePath]);
               }
             }
 
             const { error } = await supabaseClient
-              .from("products")
+              .from("gallery")
               .delete()
               .eq("id", id);
 
@@ -182,7 +166,7 @@
               return;
             }
 
-            loadProducts();
+            loadGalleryImages();
           } catch (err) {
             alert(err.message);
           }
@@ -190,66 +174,61 @@
       });
     }
 
-    productForm.addEventListener("submit", async (e) => {
+    galleryForm.addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      const name = document.getElementById("productName").value.trim();
-      const category = document.getElementById("productCategory").value.trim();
-      const price = document.getElementById("productPrice").value.trim();
-      const description = document.getElementById("productDescription").value.trim();
-      const imageFile = productImageInput.files[0];
+      const title = document.getElementById("galleryTitle").value.trim();
+      const imageFile = galleryImageInput.files[0];
 
       if (!imageFile) {
-        productMessage.textContent = "Please choose an image.";
+        galleryMessage.textContent = "Please choose an image.";
         return;
       }
 
-      productMessage.textContent = "Uploading product... please wait.";
+      galleryMessage.textContent = "Uploading gallery image... please wait.";
 
       try {
         const fileExt = imageFile.name.split(".").pop();
         const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
-        const filePath = `products/${fileName}`;
+        const filePath = `gallery/${fileName}`;
 
         const { error: uploadError } = await supabaseClient.storage
-          .from("product-images")
+          .from("gallery-images")
           .upload(filePath, imageFile);
 
         if (uploadError) {
-          productMessage.textContent = uploadError.message;
+          galleryMessage.textContent = uploadError.message;
           return;
         }
 
-        const { data: publicUrlData } = supabaseClient.storage
-          .from("product-images")
+        const { data } = supabaseClient.storage
+          .from("gallery-images")
           .getPublicUrl(filePath);
 
-        const image_url = publicUrlData.publicUrl;
+        const image_url = data.publicUrl;
 
         const { error: insertError } = await supabaseClient
-          .from("products")
-          .insert([
-            { name, category, price, description, image_url }
-          ]);
+          .from("gallery")
+          .insert([{ title, image_url }]);
 
         if (insertError) {
-          productMessage.textContent = insertError.message;
+          galleryMessage.textContent = insertError.message;
           return;
         }
 
-        productMessage.textContent = "Product uploaded successfully.";
-        productForm.reset();
-        imagePreview.src = "";
-        imagePreview.style.display = "none";
-        loadProducts();
+        galleryMessage.textContent = "Gallery image uploaded successfully.";
+        galleryForm.reset();
+        galleryPreview.src = "";
+        galleryPreview.style.display = "none";
+        loadGalleryImages();
       } catch (error) {
-        productMessage.textContent = error.message;
+        galleryMessage.textContent = error.message;
       }
     });
 
-    refreshBtn.addEventListener("click", loadProducts);
+    refreshGalleryBtn.addEventListener("click", loadGalleryImages);
 
-    loadProducts();
+    loadGalleryImages();
   </script>
 </body>
 </html>
