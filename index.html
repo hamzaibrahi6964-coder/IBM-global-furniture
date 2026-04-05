@@ -48,8 +48,8 @@
       <span class="premium-badge">Premium Furniture Brand</span>
       <h1>Elegant Furniture For Luxury Homes, Offices & Showrooms</h1>
       <p>
-        IBM Global Furniture offers premium furniture collections crafted for
-        beauty, comfort and lasting value. Discover statement pieces that elevate every space.
+        IBM Global Furniture offers premium furniture collections crafted for beauty,
+        comfort and lasting value. Discover statement pieces that elevate every space.
       </p>
       <div class="hero-buttons">
         <a href="products.html" class="btn primary-btn">Shop Collections</a>
@@ -74,7 +74,7 @@
         </a>
 
         <a href="products.html" class="premium-category-card">
-          <img src="https://images.unsplash.com/photo-1505693532989-17bda9d4d6d3?auto=format&fit=crop&w=1400&q=80" alt="Bedroom Sets">
+          <img src="https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1400&q=80" alt="Bedroom Sets">
           <div class="premium-category-overlay">
             <h3>Bedroom Sets</h3>
           </div>
@@ -106,7 +106,7 @@
 
       <div class="premium-product-preview-grid">
         <div class="premium-preview-card">
-          <img src="https://images.unsplash.com/photo-1505693532989-17bda9d4d6d3?auto=format&fit=crop&w=1400&q=80" alt="Luxury Bedroom Set">
+          <img src="https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1400&q=80" alt="Luxury Bedroom Set">
           <div class="premium-preview-content">
             <span class="preview-badge">Best Seller</span>
             <h3>Luxury Bedroom Set</h3>
@@ -116,7 +116,7 @@
         </div>
 
         <div class="premium-preview-card">
-          <img src="https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1400&q=80" alt="Modern Sofa Set">
+          <img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1400&q=80" alt="Modern Sofa Set">
           <div class="premium-preview-content">
             <span class="preview-badge">New Arrival</span>
             <h3>Modern Sofa Set</h3>
@@ -158,14 +158,14 @@
   <section class="section showcase-split-section alt-bg polished-showcase">
     <div class="container split-showcase reverse-showcase">
       <div class="split-showcase-image">
-        <img src="https://images.unsplash.com/photo-1505693532989-17bda9d4d6d3?auto=format&fit=crop&w=1600&q=80" alt="Bedroom Collection">
+        <img src="https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1600&q=80" alt="Bedroom Collection">
       </div>
       <div class="split-showcase-text">
         <span class="showcase-label">Bedroom Collection</span>
         <h2>Attractive Bedroom Sets With Luxury Finishing</h2>
         <p>
-          Our bedroom collections combine beauty, comfort and premium design to
-          create restful and sophisticated spaces.
+          Our bedroom collections combine beauty, comfort and premium design
+          to create restful and sophisticated spaces.
         </p>
         <a href="products.html" class="btn primary-btn">View Bedroom Sets</a>
       </div>
@@ -194,13 +194,13 @@
       <span class="trust-label">Buyers Trust Us</span>
       <h2>Our Strategy Is To Provide Customers With Quality Products</h2>
       <p>
-        IBM Global Furniture is committed to delivering premium furniture that
-        combines comfort, quality and style. From luxury sofa sets to elegant
-        bedroom and dining collections, we focus on craftsmanship, durability and customer satisfaction.
+        IBM Global Furniture is committed to delivering premium furniture that combines
+        comfort, quality and style. From luxury sofa sets to elegant bedroom and dining
+        collections, we focus on craftsmanship, durability and customer satisfaction.
       </p>
       <p>
-        We work to ensure every client gets furniture that adds beauty, value
-        and functionality to their home, office or commercial space.
+        We work to ensure every client gets furniture that adds beauty, value and
+        functionality to their home, office or commercial space.
       </p>
     </div>
   </section>
@@ -234,10 +234,10 @@
 
       <div>
         <h4>Customer Care</h4>
-        <div class="social-icons-row compact-socials">
-          <span>X</span>
-          <span>IG</span>
-          <span>FB</span>
+        <div class="social-icons-row compact-socials proper-socials">
+          <a href="#" class="social-circle">X</a>
+          <a href="#" class="social-circle">IG</a>
+          <a href="#" class="social-circle">f</a>
         </div>
         <p class="footer-mini-text">Available on WhatsApp and social media.</p>
       </div>
@@ -261,9 +261,11 @@
     const menuToggle = document.getElementById("menuToggle");
     const navLinks = document.getElementById("navLinks");
 
-    menuToggle.addEventListener("click", () => {
-      navLinks.classList.toggle("show");
-    });
+    if (menuToggle) {
+      menuToggle.addEventListener("click", () => {
+        navLinks.classList.toggle("show");
+      });
+    }
   </script>
 </body>
 </html>
