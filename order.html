@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Product</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="order-container">
+    <h1>Place Your Order</h1>
+
+    <form id="orderForm">
+      <input type="text" id="productName" placeholder="Product" readonly>
+
+      <input type="text" id="customerName" placeholder="Your Name" required>
+
+      <input type="tel" id="customerPhone" placeholder="Phone Number" required>
+
+      <input type="number" id="quantity" placeholder="Quantity" required>
+
+      <input type="text" id="location" placeholder="Your Location" required>
+
+      <button type="submit" class="btn primary-btn">Submit Order</button>
+    </form>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const product = params.get("product");
+
+    document.getElementById("productName").value = product || "";
+
+    document.getElementById("orderForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const name = document.getElementById("customerName").value;
+      const phone = document.getElementById("customerPhone").value;
+      const quantity = document.getElementById("quantity").value;
+      const location = document.getElementById("location").value;
+
+      const message = `Hello, I want to order:
+
+Product: ${product}
+Quantity: ${quantity}
+Name: ${name}
+Phone: ${phone}
+Location: ${location}`;
+
+      const whatsappURL = `https://wa.me/2348062301183?text=${encodeURIComponent(message)}`;
+
+      window.open(whatsappURL, "_blank");
+    });
+  </script>
+
+</body>
+</html>
