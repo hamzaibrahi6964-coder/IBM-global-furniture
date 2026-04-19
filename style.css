@@ -2730,3 +2730,19 @@ a {
 .full-btn {
   width: 100%;
 }
+
+.order-auth-card {
+  max-width: 540px;
+}
+
+.order-auth-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.order-auth-card input[readonly] {
+  background: #f4f4f4;
+  color: #555;
+}
