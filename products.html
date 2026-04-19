@@ -113,29 +113,43 @@
     });
 
     async function loadProducts() {
-      publicProductsContainer.innerHTML = "<p>Loading products...</p>";
-      emptyProductsMessage.style.display = "none";
+  publicProductsContainer.innerHTML = "<p>Loading products... please wait a few seconds.</p>";
+  emptyProductsMessage.style.display = "none";
 
-      const { data, error } = await supabaseClient
-        .from("products")
-        .select("*")
-        .order("created_at", { ascending: false });
+  try {
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("The server is taking too long to respond. Please refresh in a moment.")), 20000)
+    );
 
-      if (error) {
-        publicProductsContainer.innerHTML = `
-          <div class="simple-card">
-            <h3>Unable to load products</h3>
-            <p>${error.message}</p>
-          </div>
-        `;
-        return;
-      }
+    const queryPromise = supabaseClient
+      .from("products")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-      allProducts = data || [];
-      populateCategoryFilter(allProducts);
-      renderProducts(allProducts);
+    const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
+
+    if (error) {
+      publicProductsContainer.innerHTML = `
+        <div class="simple-card">
+          <h3>Unable to load products</h3>
+          <p>${error.message}</p>
+        </div>
+      `;
+      return;
     }
 
+    allProducts = data || [];
+    populateCategoryFilter(allProducts);
+    renderProducts(allProducts);
+  } catch (err) {
+    publicProductsContainer.innerHTML = `
+      <div class="simple-card">
+        <h3>Products are waking up</h3>
+        <p>${err.message}</p>
+      </div>
+    `;
+  }
+}
       function renderProducts(products) {
   publicProductsContainer.innerHTML = "";
 
