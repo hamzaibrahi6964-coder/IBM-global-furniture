@@ -80,7 +80,7 @@
 
       <div>
         <h4>Contact</h4>
-        <p>Phone: +234 XXX XXX XXXX</p>
+        <p>Phone: +234 806 230 1183</p>
         <p>Email: info@ibmglobalfurniture.com</p>
         <p>Address: Company address will be added here</p>
       </div>
@@ -136,43 +136,42 @@
       renderProducts(allProducts);
     }
 
-    function populateCategoryFilter(products) {
-      const categories = [...new Set(products.map(item => item.category).filter(Boolean))];
-      categoryFilter.innerHTML = '<option value="all">All Categories</option>';
+      function renderProducts(products) {
+  publicProductsContainer.innerHTML = "";
 
-      categories.forEach((category) => {
-        categoryFilter.innerHTML += `<option value="${category}">${category}</option>`;
-      });
-    }
+  if (!products.length) {
+    emptyProductsMessage.style.display = "block";
+    return;
+  }
 
-    function renderProducts(products) {
-      publicProductsContainer.innerHTML = "";
+  emptyProductsMessage.style.display = "none";
 
-      if (!products.length) {
-        emptyProductsMessage.style.display = "block";
-        return;
-      }
+  products.forEach((product) => {
+    publicProductsContainer.innerHTML += `
+      <div class="product-card dynamic-product-card">
+        <img src="${product.image_url}" alt="${product.name || 'Product'}">
+        
+        <div class="card-content">
+          <div class="product-meta">
+            <span class="product-category">${product.category || 'Furniture'}</span>
+            
+            <span class="product-price">
+              ₦${Number((product.price || '').toString().replace(/[^0-9]/g, '')).toLocaleString()}
+            </span>
+          </div>
 
-      emptyProductsMessage.style.display = "none";
+          <h3>${product.name || 'Untitled Product'}</h3>
+          <p>${product.description || 'No description available.'}</p>
 
-      products.forEach((product) => {
-  publicProductsContainer.innerHTML += `
-    <div class="product-card dynamic-product-card">
-      <img src="${product.image_url}" alt="${product.name || 'Product'}">      
-      <div class="card-content">
-        <div class="product-meta">
-          <span class="product-price">
-  ₦${Number((product.price || '').toString().replace(/[^0-9]/g, '')).toLocaleString()}
-</span>
+          <a href="order.html?product=${encodeURIComponent(product.name || 'Product')}" 
+             class="btn primary-btn small-btn">
+             Order Now
+          </a>
         </div>
-        <h3>${product.name || 'Untitled Product'}</h3>
-        <p>${product.description || 'No description available.'}</p>
-        <a href="contact.html" class="btn primary-btn small-btn">Request This Product</a>
       </div>
-    </div>
-  `;
-});
-    }
+    `;
+  });
+}
 
     function filterProducts() {
       const searchValue = searchInput.value.toLowerCase().trim();
