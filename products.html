@@ -214,6 +214,16 @@
     categoryFilter.addEventListener("change", filterProducts);
 
     loadProducts();
+
+    function populateCategoryFilter(products) {
+  const categories = [...new Set(products.map(item => item.category).filter(Boolean))];
+  
+  categoryFilter.innerHTML = '<option value="all">All Categories</option>';
+
+  categories.forEach((category) => {
+    categoryFilter.innerHTML += `<option value="${category}">${category}</option>`;
+  });
+}
   </script>
 </body>
 </html>
