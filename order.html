@@ -1,58 +1,136 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Order Product</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Order Product | IBM Global Furniture</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-  <div class="order-container">
-    <h1>Place Your Order</h1>
+  <div class="auth-page">
+    <div class="auth-card order-auth-card">
+      <h1>Place Your Order</h1>
+      <p id="orderIntroText">Checking your account...</p>
 
-    <form id="orderForm">
-      <input type="text" id="productName" placeholder="Product" readonly>
+      <!-- LOGIN REQUIRED MESSAGE -->
+      <div id="loginRequiredBox" style="display:none;">
+        <p>You need to login or create an account before placing an order.</p>
+        <div class="order-auth-actions">
+          <a href="login.html" class="btn primary-btn">Login</a>
+          <a href="signup.html" class="btn secondary-btn">Create Account</a>
+        </div>
+      </div>
 
-      <input type="text" id="customerName" placeholder="Your Name" required>
+      <!-- ORDER FORM -->
+      <form id="orderForm" style="display:none;">
+        <input type="text" id="productName" placeholder="Product" readonly />
 
-      <input type="tel" id="customerPhone" placeholder="Phone Number" required>
+        <input type="text" id="customerName" placeholder="Full Name" readonly />
+        <input type="email" id="customerEmail" placeholder="Email Address" readonly />
+        <input type="tel" id="customerPhone" placeholder="Phone Number" readonly />
 
-      <input type="number" id="quantity" placeholder="Quantity" required>
+        <input type="number" id="quantity" placeholder="Quantity" required />
+        <input type="text" id="location" placeholder="Delivery Location / Address" required />
 
-      <input type="text" id="location" placeholder="Your Location" required>
+        <button type="submit" class="btn primary-btn full-btn">Submit Order on WhatsApp</button>
+      </form>
 
-      <button type="submit" class="btn primary-btn">Submit Order</button>
-    </form>
+      <p id="orderMessage" class="form-message"></p>
+    </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
+    const SUPABASE_URL = "https://ecixygqmmfdaljpqyzkj.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_cGw6sDpRlMo9iN8VnOU6Rw_nJT2e_N2";
+    const WHATSAPP_NUMBER = "2348062301183";
+
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
     const params = new URLSearchParams(window.location.search);
     const product = params.get("product");
 
-    document.getElementById("productName").value = product || "";
+    const orderIntroText = document.getElementById("orderIntroText");
+    const loginRequiredBox = document.getElementById("loginRequiredBox");
+    const orderForm = document.getElementById("orderForm");
+    const orderMessage = document.getElementById("orderMessage");
 
-    document.getElementById("orderForm").addEventListener("submit", function(e) {
+    const productNameInput = document.getElementById("productName");
+    const customerNameInput = document.getElementById("customerName");
+    const customerEmailInput = document.getElementById("customerEmail");
+    const customerPhoneInput = document.getElementById("customerPhone");
+    const quantityInput = document.getElementById("quantity");
+    const locationInput = document.getElementById("location");
+
+    productNameInput.value = product || "";
+
+    async function initOrderPage() {
+      orderMessage.textContent = "";
+
+      const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+
+      if (sessionError) {
+        orderIntroText.textContent = "Unable to check your account right now.";
+        loginRequiredBox.style.display = "block";
+        return;
+      }
+
+      const session = sessionData.session;
+
+      if (!session || !session.user) {
+        orderIntroText.textContent = "Please login to continue.";
+        loginRequiredBox.style.display = "block";
+        return;
+      }
+
+      const user = session.user;
+
+      const { data: profile, error: profileError } = await supabaseClient
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (profileError || !profile) {
+        orderIntroText.textContent = "We found your account, but your profile is missing.";
+        orderMessage.textContent = "Please contact support or complete your account setup.";
+        return;
+      }
+
+      customerNameInput.value = profile.full_name || "";
+      customerEmailInput.value = profile.email || user.email || "";
+      customerPhoneInput.value = profile.phone || "";
+
+      orderIntroText.textContent = "Your saved profile has been loaded. Complete your order below.";
+      orderForm.style.display = "block";
+    }
+
+    orderForm.addEventListener("submit", async function (e) {
       e.preventDefault();
 
-      const name = document.getElementById("customerName").value;
-      const phone = document.getElementById("customerPhone").value;
-      const quantity = document.getElementById("quantity").value;
-      const location = document.getElementById("location").value;
+      const productName = productNameInput.value.trim();
+      const customerName = customerNameInput.value.trim();
+      const customerEmail = customerEmailInput.value.trim();
+      const customerPhone = customerPhoneInput.value.trim();
+      const quantity = quantityInput.value.trim();
+      const location = locationInput.value.trim();
 
-      const message = `Hello, I want to order:
+      const message = `Hello, I want to place an order.
 
-Product: ${product}
+Product: ${productName}
 Quantity: ${quantity}
-Name: ${name}
-Phone: ${phone}
+Customer Name: ${customerName}
+Email: ${customerEmail}
+Phone: ${customerPhone}
 Location: ${location}`;
 
-      const whatsappURL = `https://wa.me/2348062301183?text=${encodeURIComponent(message)}`;
+      const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
 
       window.open(whatsappURL, "_blank");
     });
-  </script>
 
+    initOrderPage();
+  </script>
 </body>
 </html>
