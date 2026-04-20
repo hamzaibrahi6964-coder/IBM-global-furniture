@@ -27,57 +27,43 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    const SUPABASE_URL = "https://ecixygqmmfdaljpqyzkj.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_cGw6sDpRlMo9iN8VnOU6Rw_nJT2e_N2";
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+<script>
+  const SUPABASE_URL = "https://ecixygqmmfdaljpqyzkj.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_cGw6sDpRlMo9iN8VnOU6Rw_nJT2e_N2";
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const signupForm = document.getElementById("signupForm");
-    const signupMessage = document.getElementById("signupMessage");
+  const signupForm = document.getElementById("signupForm");
+  const signupMessage = document.getElementById("signupMessage");
 
-    signupForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
+  signupForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-      const full_name = document.getElementById("fullName").value.trim();
-      const phone = document.getElementById("phone").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value.trim();
+    const full_name = document.getElementById("fullName").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
 
-      signupMessage.textContent = "Creating account...";
+    signupMessage.textContent = "Creating account...";
 
-      const { data, error } = await supabaseClient.auth.signUp({
-        email,
-        password
-      });
-
-      if (error) {
-        signupMessage.textContent = error.message;
-        return;
-      }
-
-      const user = data.user;
-
-      if (user) {
-        const { error: profileError } = await supabaseClient
-          .from("profiles")
-          .insert([
-            {
-              id: user.id,
-              full_name,
-              phone,
-              email
-            }
-          ]);
-
-        if (profileError) {
-          signupMessage.textContent = profileError.message;
-          return;
+    const { error } = await supabaseClient.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name,
+          phone
         }
       }
-
-      signupMessage.textContent = "Account created successfully. Check your email if confirmation is required.";
-      signupForm.reset();
     });
-  </script>
+
+    if (error) {
+      signupMessage.textContent = error.message;
+      return;
+    }
+
+    signupMessage.textContent = "Account created successfully. Check your email if confirmation is required.";
+    signupForm.reset();
+  });
+</script>
 </body>
 </html>
