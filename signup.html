@@ -3,67 +3,162 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sign Up | IBM Global Furniture</title>
+  <title>Order Product | IBM Global Furniture</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
   <div class="auth-page">
-    <div class="auth-card">
-      <h1>Create Account</h1>
-      <p>Sign up once and your details will be saved for faster ordering.</p>
+    <div class="auth-card order-auth-card">
+      <h1>Place Your Order</h1>
+      <p id="orderIntroText">Checking your account...</p>
 
-      <form id="signupForm">
-        <input type="text" id="fullName" placeholder="Full Name" required />
-        <input type="tel" id="phone" placeholder="Phone Number" required />
-        <input type="email" id="email" placeholder="Email Address" required />
-        <input type="password" id="password" placeholder="Password" required />
-        <button type="submit" class="btn primary-btn full-btn">Create Account</button>
+      <div id="loginRequiredBox" style="display:none;">
+        <p>You need to login or create an account before placing an order.</p>
+        <div class="order-auth-actions">
+          <a href="login.html" class="btn primary-btn">Login</a>
+          <a href="signup.html" class="btn secondary-btn">Create Account</a>
+        </div>
+      </div>
+
+      <form id="orderForm" style="display:none;">
+        <input type="text" id="productName" placeholder="Product" readonly />
+        <input type="text" id="customerName" placeholder="Full Name" readonly />
+        <input type="email" id="customerEmail" placeholder="Email Address" readonly />
+        <input type="tel" id="customerPhone" placeholder="Phone Number" readonly />
+        <input type="number" id="quantity" placeholder="Quantity" required />
+        <input type="text" id="location" placeholder="Delivery Location / Address" required />
+        <button type="submit" class="btn primary-btn full-btn">Submit Order</button>
       </form>
 
-      <p id="signupMessage" class="form-message"></p>
-      <p class="auth-switch">Already have an account? <a href="login.html">Login</a></p>
+      <p id="orderMessage" class="form-message"></p>
+      <p style="margin-top: 16px;"><a href="my-orders.html">View My Orders</a></p>
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-  const SUPABASE_URL = "https://ecixygqmmfdaljpqyzkj.supabase.co";
-  const SUPABASE_KEY = "sb_publishable_cGw6sDpRlMo9iN8VnOU6Rw_nJT2e_N2";
-  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  <script>
+    const SUPABASE_URL = "https://ecixygqmmfdaljpqyzkj.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_cGw6sDpRlMo9iN8VnOU6Rw_nJT2e_N2";
+    const WHATSAPP_NUMBER = "2348062301183";
 
-  const signupForm = document.getElementById("signupForm");
-  const signupMessage = document.getElementById("signupMessage");
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  signupForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
+    const params = new URLSearchParams(window.location.search);
+    const product = params.get("product");
 
-    const full_name = document.getElementById("fullName").value.trim();
-    const phone = document.getElementById("phone").value.trim();
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value.trim();
+    const orderIntroText = document.getElementById("orderIntroText");
+    const loginRequiredBox = document.getElementById("loginRequiredBox");
+    const orderForm = document.getElementById("orderForm");
+    const orderMessage = document.getElementById("orderMessage");
 
-    signupMessage.textContent = "Creating account...";
+    const productNameInput = document.getElementById("productName");
+    const customerNameInput = document.getElementById("customerName");
+    const customerEmailInput = document.getElementById("customerEmail");
+    const customerPhoneInput = document.getElementById("customerPhone");
+    const quantityInput = document.getElementById("quantity");
+    const locationInput = document.getElementById("location");
 
-    const { error } = await supabaseClient.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name,
-          phone
-        }
+    let currentUser = null;
+
+    productNameInput.value = product || "";
+
+    async function initOrderPage() {
+      orderMessage.textContent = "";
+
+      const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+
+      if (sessionError) {
+        orderIntroText.textContent = "Unable to check your account right now.";
+        loginRequiredBox.style.display = "block";
+        return;
       }
-    });
 
-    if (error) {
-      signupMessage.textContent = error.message;
-      return;
+      const session = sessionData.session;
+
+      if (!session || !session.user) {
+        orderIntroText.textContent = "Please login to continue.";
+        loginRequiredBox.style.display = "block";
+        return;
+      }
+
+      currentUser = session.user;
+
+      const { data: profile, error: profileError } = await supabaseClient
+        .from("profiles")
+        .select("*")
+        .eq("id", currentUser.id)
+        .single();
+
+      if (profileError || !profile) {
+        orderIntroText.textContent = "We found your account, but your profile is missing.";
+        orderMessage.textContent = "Please contact support or complete your account setup.";
+        return;
+      }
+
+      customerNameInput.value = profile.full_name || "";
+      customerEmailInput.value = profile.email || currentUser.email || "";
+      customerPhoneInput.value = profile.phone || "";
+
+      orderIntroText.textContent = "Your saved profile has been loaded. Complete your order below.";
+      orderForm.style.display = "block";
     }
 
-    signupMessage.textContent = "Account created successfully. Check your email if confirmation is required.";
-    signupForm.reset();
-  });
-</script>
+    orderForm.addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      if (!currentUser) {
+        orderMessage.textContent = "Please login first.";
+        return;
+      }
+
+      const productName = productNameInput.value.trim();
+      const customerName = customerNameInput.value.trim();
+      const customerEmail = customerEmailInput.value.trim();
+      const customerPhone = customerPhoneInput.value.trim();
+      const quantity = quantityInput.value.trim();
+      const location = locationInput.value.trim();
+
+      orderMessage.textContent = "Saving your order...";
+
+      const { error: insertError } = await supabaseClient
+        .from("orders")
+        .insert([
+          {
+            user_id: currentUser.id,
+            product_name: productName,
+            customer_name: customerName,
+            customer_email: customerEmail,
+            customer_phone: customerPhone,
+            quantity: Number(quantity),
+            location: location
+          }
+        ]);
+
+      if (insertError) {
+        orderMessage.textContent = insertError.message;
+        return;
+      }
+
+      const message = `Hello, I want to place an order.
+
+Product: ${productName}
+Quantity: ${quantity}
+Customer Name: ${customerName}
+Email: ${customerEmail}
+Phone: ${customerPhone}
+Location: ${location}`;
+
+      const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+
+      orderMessage.textContent = "Order saved successfully. Redirecting to WhatsApp...";
+      setTimeout(() => {
+        window.open(whatsappURL, "_blank");
+        window.location.href = "my-orders.html";
+      }, 1200);
+    });
+
+    initOrderPage();
+  </script>
 </body>
 </html>
