@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Orders | IBM Global Furniture</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="auth-page">
+    <div class="auth-card" style="max-width: 900px;">
+      <h1>My Orders</h1>
+      <p>Track the orders you have placed.</p>
+
+      <div id="ordersMessage" class="form-message"></div>
+      <div id="ordersContainer" class="my-orders-list"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://ecixygqmmfdaljpqyzkj.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_cGw6sDpRlMo9iN8VnOU6Rw_nJT2e_N2";
+
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const ordersMessage = document.getElementById("ordersMessage");
+    const ordersContainer = document.getElementById("ordersContainer");
+
+    async function loadOrders() {
+      ordersMessage.textContent = "Loading your orders...";
+
+      const { data: sessionData } = await supabaseClient.auth.getSession();
+      const session = sessionData.session;
+
+      if (!session || !session.user) {
+        ordersMessage.textContent = "Please login first.";
+        ordersContainer.innerHTML = `<p><a href="login.html">Go to Login</a></p>`;
+        return;
+      }
+
+      const user = session.user;
+
+      const { data, error } = await supabaseClient
+        .from("orders")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        ordersMessage.textContent = error.message;
+        return;
+      }
+
+      ordersMessage.textContent = "";
+
+      if (!data.length) {
+        ordersContainer.innerHTML = "<p>You have not placed any orders yet.</p>";
+        return;
+      }
+
+      ordersContainer.innerHTML = "";
+
+      data.forEach((order) => {
+        ordersContainer.innerHTML += `
+          <div class="order-card">
+            <h3>${order.product_name}</h3>
+            <p><strong>Quantity:</strong> ${order.quantity}</p>
+            <p><strong>Location:</strong> ${order.location}</p>
+            <p><strong>Status:</strong> ${order.status}</p>
+            <p><strong>Date:</strong> ${new Date(order.created_at).toLocaleString()}</p>
+          </div>
+        `;
+      });
+    }
+
+    loadOrders();
+  </script>
+</body>
+</html>
